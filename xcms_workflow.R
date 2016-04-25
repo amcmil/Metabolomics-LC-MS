@@ -1,4 +1,4 @@
-#Amy McMillan 16/09/2015
+#Amy McMillan 25/04/2016
 #--------------------------------------
 #Workflow for peaklist generation from .raw files using xc-ms in R
 #--------------------------------------
@@ -13,15 +13,16 @@
 library(xcms)
 
 #select files 
-files<-list.files("/path to files",recursive=TRUE,full.names=TRUE)      
+files<-list.files("/path to files",recursive=FALSE,full.names=TRUE, patterm="mzML")      
 
 #peak detection
-xset<-xcmsSet(files,method="centWave", polarity="positive",prefilter=c(3,5000),ppm=2.5, snthresh=5,peakwidth=c(5,20),noise=100000)
+xset<-xcmsSet(files,method="centWave", polarity="positive",prefilter=c(3,5000),ppm=1, snthresh=5,peakwidth=c(5,20),noise=100000)
 
 #rt correction
 xset1 <- retcor(xset, method="obiwarp", plottype = c("deviation"))
 
 #group samples
+#alternatively can use "minsamp" (minimum number of samples peak must be present in to be kept) as substitution for "minfrac"
 xset2 <- group(xset1, bw = 5, minfrac = 0.25, mzwid = 0.015)
 
 #fill peaks--> integrates masses below sn threshold 
@@ -36,7 +37,9 @@ write.table(peaks,"peaklist_pos_all.txt",sep="\t",col.names=NA)
 
 #to replace zeros with 2/3 min value on per metabolite basis for human data(required before data can be converted to log scale)
 #[,9:89] idicates range of sample columns. xc-ms output samples start at column 9.
-which.m <-  apply(d[,9:89],1, function(x){min(x[which(x>0)])*0.6667})
+x=number of columns in "peaks"
+d<-peaks
+which.m <-  apply(d[,9:x],1, function(x){min(x[which(x>0)])*0.6667})
 for(i in 1:nrow(d)){
 x <- which(d[i,] == 0)
 d[i,x]  <-  which.m[i]
