@@ -13,7 +13,7 @@
 library(xcms)
 
 #select files 
-files<-list.files("/path to files",recursive=FALSE,full.names=TRUE, patterm="mzML")      
+files<-list.files("/path to files",recursive=FALSE,full.names=TRUE, pattern="mzML")      
 
 #peak detection
 xset<-xcmsSet(files,method="centWave", polarity="positive",prefilter=c(3,5000),ppm=1, snthresh=5,peakwidth=c(5,20),noise=100000)
@@ -44,6 +44,8 @@ for(i in 1:nrow(d)){
 x <- which(d[i,] == 0)
 d[i,x]  <-  which.m[i]
 }
+
+peaks_log<-log2(d[,9:x])
 
 #write log peaklist to file
 write.table(peaks_log,"peaklist_pos_log2_all.txt",sep="\t",col.names=NA)
